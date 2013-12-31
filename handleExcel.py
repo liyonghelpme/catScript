@@ -5,6 +5,13 @@ import MySQLdb
 f = open_workbook((u'角色新改.xlsx').encode('gbk'))
 
 con = MySQLdb.connect(host='192.168.3.120', user='root', passwd='badperson3', db='miamiao', charset='utf8')
+sql = 'select * from people'
+con.query(sql)
+allP = con.store_result().fetch_row(0, 1)
+temp = {}
+for k in allP:
+    temp[k['name']] = k
+
 for s in f.sheets():
     print s.name
     if s.name == u'角色数据补充':
@@ -33,6 +40,11 @@ for s in f.sheets():
                         vmap[col] = cnTokey[v]
                 else:
                     if vmap[col] != 'name':
+                        if temp.get(values[0], None) == None:
+                            sql = u'insert into people (name) values("%s")' % (values[0])
+                            con.query(sql.encode('utf8'))
+                            temp[values[0]] = True
+                            #con.commit()
                         sql = u'update people set %s = %d where name = "%s" ' % (vmap[col], v, values[0])
                         print sql
                         con.query(sql.encode('utf8'))
